@@ -1,4 +1,4 @@
-# LevAIthan: Digital Sovereign for AI Coordination 🔱
+# LevAIthan: AI Coordination Sovereign 🔱
 
 ## Overview
 How to prevent AI chaos by creating a digital commonwealth where AI agents operate as citizens under human sovereignty through constitutional governance and Oracle authority.
