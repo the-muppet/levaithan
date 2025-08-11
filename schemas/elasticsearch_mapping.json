@@ -1,0 +1,366 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "activity_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "stop", "activity_synonyms"]
+        },
+        "code_analyzer": {
+          "type": "custom",
+          "tokenizer": "whitespace",
+          "filter": ["lowercase", "code_edge_ngram"]
+        }
+      },
+      "filter": {
+        "activity_synonyms": {
+          "type": "synonym",
+          "synonyms": [
+            "execute,run,perform",
+            "complete,finish,done",
+            "error,failure,exception",
+            "create,generate,produce",
+            "update,modify,change"
+          ]
+        },
+        "code_edge_ngram": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "activity_id": {
+        "type": "keyword",
+        "doc_values": true
+      },
+      "timestamp": {
+        "type": "date",
+        "format": "strict_date_time||epoch_millis"
+      },
+      "agent_id": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "type": "text",
+            "analyzer": "standard"
+          }
+        }
+      },
+      "task_id": {
+        "type": "keyword"
+      },
+      "session_id": {
+        "type": "keyword"
+      },
+      "workflow_execution_id": {
+        "type": "keyword"
+      },
+      "event_type": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "type": "text",
+            "analyzer": "activity_analyzer"
+          }
+        }
+      },
+      "hook_name": {
+        "type": "keyword",
+        "fields": {
+          "text": {
+            "type": "text",
+            "analyzer": "code_analyzer"
+          }
+        }
+      },
+      "activity_type": {
+        "type": "keyword"
+      },
+      "status": {
+        "type": "keyword"
+      },
+      "duration_ms": {
+        "type": "long"
+      },
+      "cost": {
+        "properties": {
+          "input_tokens": {
+            "type": "integer"
+          },
+          "output_tokens": {
+            "type": "integer"
+          },
+          "total_cost_usd": {
+            "type": "float"
+          },
+          "model": {
+            "type": "keyword"
+          }
+        }
+      },
+      "resource": {
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "path": {
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text",
+                "analyzer": "standard"
+              }
+            }
+          },
+          "action": {
+            "type": "keyword"
+          },
+          "size_bytes": {
+            "type": "long"
+          }
+        }
+      },
+      "governance": {
+        "properties": {
+          "check_type": {
+            "type": "keyword"
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "human_approval_required": {
+            "type": "boolean"
+          },
+          "human_approver": {
+            "type": "keyword"
+          },
+          "rejection_reason": {
+            "type": "text",
+            "analyzer": "standard"
+          },
+          "ethics_score": {
+            "type": "float"
+          },
+          "budget_remaining_usd": {
+            "type": "float"
+          }
+        }
+      },
+      "error": {
+        "properties": {
+          "type": {
+            "type": "keyword"
+          },
+          "message": {
+            "type": "text",
+            "analyzer": "standard",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "stack_trace": {
+            "type": "text",
+            "index": false
+          },
+          "recovery_attempted": {
+            "type": "boolean"
+          },
+          "recovery_successful": {
+            "type": "boolean"
+          }
+        }
+      },
+      "context": {
+        "properties": {
+          "injected_context": {
+            "type": "text",
+            "analyzer": "standard"
+          },
+          "context_effectiveness": {
+            "type": "float"
+          },
+          "similar_tasks": {
+            "type": "keyword"
+          },
+          "patterns_applied": {
+            "type": "keyword"
+          }
+        }
+      },
+      "payload": {
+        "type": "object",
+        "enabled": true
+      },
+      "metadata": {
+        "properties": {
+          "host": {
+            "type": "keyword"
+          },
+          "environment": {
+            "type": "keyword"
+          },
+          "version": {
+            "type": "keyword"
+          },
+          "log_level": {
+            "type": "keyword"
+          },
+          "source_file": {
+            "type": "keyword",
+            "fields": {
+              "text": {
+                "type": "text",
+                "analyzer": "code_analyzer"
+              }
+            }
+          },
+          "line_number": {
+            "type": "integer"
+          }
+        }
+      },
+      "metrics": {
+        "properties": {
+          "memory_usage_mb": {
+            "type": "float"
+          },
+          "cpu_percent": {
+            "type": "float"
+          },
+          "disk_io_bytes": {
+            "type": "long"
+          },
+          "network_io_bytes": {
+            "type": "long"
+          },
+          "queue_depth": {
+            "type": "integer"
+          },
+          "active_sessions": {
+            "type": "integer"
+          }
+        }
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "correlation_id": {
+        "type": "keyword"
+      },
+      "parent_activity_id": {
+        "type": "keyword"
+      },
+      "children_count": {
+        "type": "integer"
+      }
+    }
+  },
+  "aliases": {
+    "activity_logs_read": {},
+    "activity_logs_write": {}
+  },
+  "index_templates": [
+    {
+      "name": "activity_logs_template",
+      "index_patterns": ["activity_logs-*"],
+      "template": {
+        "settings": {
+          "index.lifecycle.name": "activity_logs_policy",
+          "index.lifecycle.rollover_alias": "activity_logs_write"
+        }
+      }
+    }
+  ],
+  "_meta": {
+    "description": "Elasticsearch mapping for LevAIthan activity logs",
+    "version": "1.0.0",
+    "created_date": "2025-08-09",
+    "index_patterns": {
+      "daily": "activity_logs-YYYY.MM.DD",
+      "monthly": "activity_logs-YYYY.MM"
+    },
+    "retention_policy": {
+      "hot_phase": "7 days",
+      "warm_phase": "30 days",
+      "cold_phase": "90 days",
+      "delete_phase": "365 days"
+    },
+    "query_examples": {
+      "recent_errors": {
+        "query": {
+          "bool": {
+            "must": [
+              {"term": {"status": "error"}},
+              {"range": {"timestamp": {"gte": "now-1h"}}}
+            ]
+          }
+        }
+      },
+      "agent_activities": {
+        "query": {
+          "bool": {
+            "must": [
+              {"term": {"agent_id": "agent-123"}},
+              {"range": {"timestamp": {"gte": "now-24h"}}}
+            ]
+          }
+        },
+        "aggs": {
+          "activity_types": {
+            "terms": {"field": "activity_type"}
+          }
+        }
+      },
+      "cost_analysis": {
+        "query": {"range": {"timestamp": {"gte": "now-7d"}}},
+        "aggs": {
+          "total_cost": {
+            "sum": {"field": "cost.total_cost_usd"}
+          },
+          "by_agent": {
+            "terms": {"field": "agent_id"},
+            "aggs": {
+              "agent_cost": {
+                "sum": {"field": "cost.total_cost_usd"}
+              }
+            }
+          }
+        }
+      },
+      "governance_violations": {
+        "query": {
+          "bool": {
+            "must": [
+              {"term": {"governance.passed": false}},
+              {"range": {"timestamp": {"gte": "now-7d"}}}
+            ]
+          }
+        }
+      },
+      "performance_metrics": {
+        "query": {"match_all": {}},
+        "aggs": {
+          "avg_duration": {
+            "avg": {"field": "duration_ms"}
+          },
+          "percentiles_duration": {
+            "percentiles": {
+              "field": "duration_ms",
+              "percents": [50, 95, 99]
+            }
+          }
+        }
+      }
+    }
+  }
+}
