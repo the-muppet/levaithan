@@ -2,8 +2,7 @@
 
 ## Overview
 How to prevent AI chaos by creating a digital commonwealth where AI agents operate as citizens under human sovereignty through constitutional governance and Oracle authority.
-
-LevAIthan attemmpts to prevent AI chaos through creation of a 'digital commonwealth' so to speak. Where AI agents operate as citizens under human sovereignty, bound by constitutional governance, empowered 
+This project seeks to answer "at what point does a complex enough automation system become indistinguishable from intelligence?"
 
 ## Quick Start
 
