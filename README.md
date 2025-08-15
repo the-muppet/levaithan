@@ -1,3 +1,5 @@
+WORK IN PROGRESS
+
 # LevAIthan: AI Coordination Sovereign 🔱
 
 ## Overview
